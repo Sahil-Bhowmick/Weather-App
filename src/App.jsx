@@ -12,6 +12,7 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [units, setUnits] = useState("metric");
   const [value, setValue] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(true);
 
   const [bg, setBg] = useState(hotBg);
 
@@ -21,7 +22,6 @@ function App() {
       setWeather(data);
 
       //  Dynamic Background
-
       const threshold = units === "metric" ? 20 : 60;
       if (data.temp <= threshold) setBg(coldBg);
       else setBg(hotBg);
@@ -29,7 +29,6 @@ function App() {
 
     fetchWeatherData();
   }, [units, city]);
-
 
   const handleUnitsClick = (e) => {
     const button = e.currentTarget;
@@ -42,20 +41,17 @@ function App() {
 
   const enterKeyPressed = (e) => {
     if (e.keyCode === 13) {
-      setCity(e.currentTarget.value);
+      setCity(value);
       setValue("");
-      e.currentTarget.blur();
+      setShowSuggestions(false);
     }
   };
 
   const handleSearchClick = () => {
-    const input = document.querySelector("input[name='city']");
-    setCity(input.value);
-    input.value = "";
+    setCity(value);
     setValue("");
+    setShowSuggestions(false);
   };
-
-  
 
   const invalidCityToast = () => {
     toast.error("Oops Invalid City Name! Sorry This City Not Found! ", {
@@ -72,10 +68,12 @@ function App() {
 
   const onChange = (event) => {
     setValue(event.target.value);
+    setShowSuggestions(true);
   };
 
   const onSearch = (searchTerm) => {
     setValue(searchTerm);
+    setShowSuggestions(false);
   };
 
   return (
@@ -93,37 +91,31 @@ function App() {
                 value={value}
               />
 
-              <div className="suggestion">
-                {CityData.filter((item) => {
-                  const searchTerm = value.toLowerCase();
-                  const cityName = item.name.toLowerCase();
+              {showSuggestions && (
+                <div className="suggestion">
+                  {CityData.filter((item) => {
+                    const searchTerm = value.toLowerCase();
+                    const cityName = item.name.toLowerCase();
 
-                  return (
-                    searchTerm &&
-                    cityName.startsWith(searchTerm) &&
-                    name !== searchTerm
-                  );
-                })
-                  .slice(0, 10)
-                  .map((item) => (
-                    <div
-                      onClick={() => onSearch(item.name)}
-                      className="suggestion-row"
-                      key={item.id}
-                    >
-                      {item.name}
-                    </div>
-                  ))}
-              </div>
-              <button
-                onClick={() => {
-                  handleSearchClick();
-                  onSearch(value);
-                  // invalidCityToast();
-                }}
-              >
-                Search
-              </button>
+                    return (
+                      searchTerm &&
+                      cityName.startsWith(searchTerm) &&
+                      item.name !== searchTerm
+                    );
+                  })
+                    .slice(0, 10)
+                    .map((item) => (
+                      <div
+                        onClick={() => onSearch(item.name)}
+                        className="suggestion-row"
+                        key={item.id}
+                      >
+                        {item.name}
+                      </div>
+                    ))}
+                </div>
+              )}
+              <button onClick={handleSearchClick}>Search</button>
 
               <button onClick={(e) => handleUnitsClick(e)}>°F</button>
               <ToastContainer />
