@@ -1,4 +1,4 @@
-import React, { useEffect, useState, KeyboardEvent, ChangeEvent } from "react";
+import { useEffect, useState, KeyboardEvent, ChangeEvent } from "react";
 import hotBg from "./assets/hot.jpg";
 import coldBg from "./assets/cold.jpg";
 import Descriptions from "./Components/Descriptions";
