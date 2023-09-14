@@ -1,4 +1,4 @@
-import { useEffect, useState, KeyboardEvent, ChangeEvent } from "react";
+import React, { useEffect, useState, KeyboardEvent, ChangeEvent } from "react";
 import hotBg from "./assets/hot.jpg";
 import coldBg from "./assets/cold.jpg";
 import Descriptions from "./Components/Descriptions";
@@ -16,15 +16,42 @@ function App() {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(true);
   const [bg, setBg] = useState(hotBg);
 
+  const successWeatherToast = (cityName: string) => {
+    toast.success(`Weather data for ${cityName} fetched successfully!`, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+
+  const invalidCityToast = () => {
+    toast.error("Invalid city name. Please enter a valid city.", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+
   useEffect(() => {
     const fetchWeatherData = async () => {
       const data = await getFormattedWeatherData(city, units);
       setWeather(data);
 
-      //  Dynamic Background
+      // Dynamic Background
       const threshold = units === "metric" ? 20 : 60;
       if (data?.temp && data.temp <= threshold) setBg(coldBg);
       else setBg(hotBg);
+      successWeatherToast(city);
     };
 
     fetchWeatherData();
@@ -36,30 +63,35 @@ function App() {
 
   const enterKeyPressed = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.keyCode === 13) {
-      setCity(value);
-      setValue("");
-      setShowSuggestions(false);
+      const searchTerm = value.toLowerCase();
+      const isCityValid = CityData.some(
+        (item) => item.name.toLowerCase() === searchTerm
+      );
+
+      if (isCityValid) {
+        setCity(value);
+        setValue("");
+        setShowSuggestions(false);
+      } else {
+        invalidCityToast();
+      }
     }
   };
 
   const handleSearchClick = () => {
-    setCity(value);
-    setValue("");
-    setShowSuggestions(false);
-  };
+    const searchTerm = value.toLowerCase();
+    const isCityValid = CityData.some(
+      (item) => item.name.toLowerCase() === searchTerm
+    );
 
-  // const invalidCityToast = () => {
-  //   toast.error("Oops Invalid City Name! Sorry This City Not Found! ", {
-  //     position: "top-right",
-  //     autoClose: 3000,
-  //     hideProgressBar: false,
-  //     closeOnClick: true,
-  //     pauseOnHover: true,
-  //     draggable: true,
-  //     progress: undefined,
-  //     theme: "dark",
-  //   });
-  // };
+    if (isCityValid) {
+      setCity(value);
+      setValue("");
+      setShowSuggestions(false);
+    } else {
+      invalidCityToast();
+    }
+  };
 
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
